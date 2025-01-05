@@ -1,35 +1,49 @@
 package main
 
 import (
-	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/simp7/guniq/unique"
 )
+
+type Unique interface {
+	Execute(input io.Reader, output io.Writer)
+}
 
 func main() {
 	var reader io.Reader = os.Stdin
 	var writer io.Writer = os.Stdout
 	var err error
+	var u Unique = unique.Standard()
 
-	args := os.Args
+	counting := flag.Bool("c", false, "count")
+	flag.Parse()
+
+	if *counting {
+		u = unique.Counting()
+	}
+
+	args := flag.Args()
 
 	switch len(args) {
+	case 0:
 	case 1:
-	case 2:
-		if args[1] == "-" {
+		if args[0] == "-" {
 			break
 		}
-		reader, err = os.Open(args[1])
+		reader, err = os.Open(args[0])
 		if err != nil {
 			fmt.Println("Error: ", err)
-			os.Exit(1)
+			os.Exit(0)
 		}
 	default:
 		readers := make([]io.Reader, 0)
-		for i := 1; i < len(args)-2; i++ {
-			readers[i-1], err = os.Open(args[i])
+		for i := 0; i < len(args)-1; i++ {
+			readers[i], err = os.Open(args[i])
 			if err != nil {
 				fmt.Println("Error: ", err)
 				os.Exit(1)
@@ -48,30 +62,6 @@ func main() {
 		}
 	}
 
-	u := NewUnique()
 	u.Execute(reader, writer)
 	os.Exit(0)
-}
-
-type unique struct {
-	prev string
-}
-
-func NewUnique() *unique {
-	u := new(unique)
-	return u
-}
-
-func (u *unique) Execute(input io.Reader, output io.Writer) {
-	reader := bufio.NewReader(input)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			return
-		}
-		if u.prev != line {
-			output.Write([]byte(line))
-			u.prev = line
-		}
-	}
 }
