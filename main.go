@@ -20,11 +20,16 @@ func main() {
 	var err error
 	var u Unique = unique.Standard()
 
-	counting := flag.Bool("c", false, "count")
+	counting := flag.Bool("c", false, "add count of repeated lines")
+	repeated := flag.Bool("d", false, "print only repeated lines")
 	flag.Parse()
 
 	if *counting {
 		u = unique.Counting()
+	}
+
+	if *repeated {
+		u = unique.Repeated()
 	}
 
 	args := flag.Args()
