@@ -22,6 +22,7 @@ func main() {
 
 	counting := flag.Bool("c", false, "add count of repeated lines")
 	repeated := flag.Bool("d", false, "print only repeated lines")
+	singular := flag.Bool("u", false, "print only unique lines")
 	flag.Parse()
 
 	if *counting {
@@ -30,6 +31,10 @@ func main() {
 
 	if *repeated {
 		u = unique.Repeated()
+	}
+
+	if *singular {
+		u = unique.Singular()
 	}
 
 	args := flag.Args()
