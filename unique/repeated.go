@@ -2,40 +2,51 @@ package unique
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 )
 
 type repeated struct {
-	prev string
+	prev       string
+	isCounting bool
 }
 
-func Repeated() *repeated {
+func Repeated(isCounting bool) *repeated {
 	r := new(repeated)
+	r.isCounting = isCounting
 	return r
 }
 
-func (r *repeated) Execute(input io.Reader, output io.Writer) {
-	printed := false
-	reader := bufio.NewReader(input)
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		return
+func (r *repeated) print(output io.Writer, count int) {
+	formatted := r.prev + "\n"
+	if r.isCounting {
+		formatted = fmt.Sprintf("%4d %s", count, formatted)
 	}
-	r.prev = line
+	output.Write([]byte(formatted))
+}
 
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			return
-		}
+func (r *repeated) Execute(input io.Reader, output io.Writer) {
+	scanner := bufio.NewScanner(input)
+	scanner.Scan()
+	line := scanner.Text()
+
+	r.prev = line
+	count := 1
+
+	for scanner.Scan() {
+		line := scanner.Text()
 		if r.prev != line {
+			if count > 1 {
+				r.print(output, count)
+			}
 			r.prev = line
-			printed = false
+			count = 1
 			continue
 		}
-		if !printed {
-			output.Write([]byte(line))
-			printed = true
-		}
+		count++
+	}
+
+	if count > 1 {
+		r.print(output, count)
 	}
 }

@@ -15,14 +15,16 @@ func Standard() *standard {
 }
 
 func (s *standard) Execute(input io.Reader, output io.Writer) {
-	reader := bufio.NewReader(input)
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			return
-		}
+	scanner := bufio.NewScanner(input)
+	scanner.Scan()
+	line := scanner.Text()
+	output.Write([]byte(line + "\n"))
+	s.prev = line
+
+	for scanner.Scan() {
+		line = scanner.Text()
 		if s.prev != line {
-			output.Write([]byte(line))
+			output.Write([]byte(line + "\n"))
 			s.prev = line
 		}
 	}

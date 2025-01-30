@@ -6,38 +6,45 @@ import (
 )
 
 type singular struct {
-	prev string
+	prev       string
+	isCounting bool
 }
 
-func Singular() *singular {
+func Singular(isCounting bool) *singular {
 	r := new(singular)
+	r.isCounting = isCounting
 	return r
+}
+
+func (s *singular) print(output io.Writer) {
+	formatted := s.prev + "\n"
+	if s.isCounting {
+		formatted = "   1 " + formatted
+	}
+	output.Write([]byte(formatted))
 }
 
 func (s *singular) Execute(input io.Reader, output io.Writer) {
 	isDuplicate := false
-	reader := bufio.NewReader(input)
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		return
-	}
+	scanner := bufio.NewScanner(input)
+	scanner.Scan()
+	s.prev = scanner.Text()
 
-	s.prev = line
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			output.Write([]byte(s.prev))
-			return
-		}
-
+	for scanner.Scan() {
+		line := scanner.Text()
 		if s.prev != line {
 			if !isDuplicate {
-				output.Write([]byte(s.prev))
+				s.print(output)
 			}
 			s.prev = line
 			isDuplicate = false
-			continue
+		} else {
+			isDuplicate = true
 		}
-		isDuplicate = true
+		s.prev = line
+	}
+
+	if !isDuplicate {
+		s.print(output)
 	}
 }

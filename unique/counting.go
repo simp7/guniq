@@ -16,31 +16,25 @@ func Counting() *counting {
 }
 
 func (c *counting) Execute(input io.Reader, output io.Writer) {
-	reader := bufio.NewReader(input)
-	count := 0
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		return
-	}
-	c.prev = line
+	scanner := bufio.NewScanner(input)
+	scanner.Scan()
 
-	for {
-		count++
+	c.prev = scanner.Text()
+	count := 1
 
-		line, err = reader.ReadString('\n')
-		if err != nil {
-			formatted := fmt.Sprintf("%d %s", count, c.prev)
-			output.Write([]byte(formatted))
-			return
-		}
-
+	for scanner.Scan() {
+		line := scanner.Text()
 		if c.prev == line {
+			count++
 			continue
 		}
 
-		formatted := fmt.Sprintf("%d %s", count, c.prev)
+		formatted := fmt.Sprintf("%4d %s\n", count, c.prev)
 		output.Write([]byte(formatted))
 		c.prev = line
-		count = 0
+		count = 1
 	}
+
+	formatted := fmt.Sprintf("%4d %s\n", count, c.prev)
+	output.Write([]byte(formatted))
 }

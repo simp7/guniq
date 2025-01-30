@@ -29,12 +29,12 @@ func main() {
 		u = unique.Counting()
 	}
 
-	if *repeated {
-		u = unique.Repeated()
+	if *singular {
+		u = unique.Singular(*counting)
 	}
 
-	if *singular {
-		u = unique.Singular()
+	if *repeated {
+		u = unique.Repeated(*counting)
 	}
 
 	args := flag.Args()
